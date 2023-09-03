@@ -1,20 +1,54 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 
 namespace core_data_provider;
 
 public class Program
 {
-    private static void Main(string[] args)
+    private static IConfigurationRoot InitConfiguration()
     {
-        IConfigurationRoot config = new ConfigurationBuilder()
+        return new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddEnvironmentVariables()
             .Build();
+    }
+    static SqlConnection GetSqlConnection(IConfigurationRoot config)
+    {
         string connectionString = config.GetConnectionString("MSSQLServer") ?? string.Empty;
+        return new SqlConnection(connectionString);
+    }
 
-        UsersSQLQuerySelectCommand(connectionString);
+    private static void Main(string[] args)
+    {
+        IConfigurationRoot config = InitConfiguration();
+        SqlConnection connection = GetSqlConnection(config);
+        connection.Open();
+
+        ToDosRepository toDosRepository = new(connection);
+        // ToDo toDo = new()
+        // {
+        //     Title = "Task 006",
+        //     Description = "Some description about the task",
+        //     Done = false,
+        //     Status = ToDoStatus.Completed,
+        //     CreatedAt = DateTime.UtcNow
+        // };
+
+        // toDo = toDosRepository.CreateAsync(toDo).GetAwaiter().GetResult();
+        // Console.WriteLine("ToDo created with Id: {0}", toDo.Id);
+        List<ToDo> toDos = toDosRepository.RetrieveDataWithDataAdapterAndQueryingWithLinq();
+        foreach (ToDo toDo in toDos)
+        {
+            Console.WriteLine("Id: " + toDo.Id);
+            Console.WriteLine("Title: " + toDo.Title);
+            Console.WriteLine("Status: " + toDo.Status);
+        }
+
+        Console.WriteLine("============================================");
+        connection.Close();
+        // UsersSQLQuerySelectCommand(connectionString);
     }
 
     private static void UsersSQLQuerySelectCommand(string connectionString)

@@ -16,12 +16,15 @@ public class ToDosRepository
     {
         SqlDataAdapter adapter = new SqlDataAdapter();
         toDo.Id = Guid.NewGuid();
-        const string sqlQuery = "INSERT INTO ToDos (Id, Title, Description, Done, Status, CreatedAt)" +
-            "VALUES (@Id, @Title, @Description, @Done, @Status, @CreatedAt)";
-        // https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/executing-a-command
-        SqlCommand cmd = new SqlCommand(sqlQuery, _connection);
-        SqlParameter[] sqlParameters = GetParameters(toDo);
-        cmd.Parameters.AddRange(sqlParameters);
+        SqlCommand cmd = new SqlOperationsBuilder().From(toDo).GetInsertCommand();
+        cmd.CommandType = CommandType.Text;
+        cmd.Connection = _connection;
+        //const string sqlQuery = "INSERT INTO ToDos (Id, Title, Description, Done, Status, CreatedAt)" +
+        //    "VALUES (@Id, @Title, @Description, @Done, @Status, @CreatedAt)";
+        //// https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/executing-a-command
+        //SqlCommand cmd = new SqlCommand(sqlQuery, _connection);
+        //SqlParameter[] sqlParameters = GetParameters(toDo);
+        //cmd.Parameters.AddRange(sqlParameters);
         adapter.InsertCommand = cmd;
         int rowsAffected = await adapter.InsertCommand.ExecuteNonQueryAsync();
         Console.WriteLine($"{rowsAffected} rows affected.");

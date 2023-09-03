@@ -2,9 +2,9 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 
-class Program
+class Program1
 {
-    static void Main(string[] args)
+    static void Main1()
     {
         // Settings settings = new Settings();
 

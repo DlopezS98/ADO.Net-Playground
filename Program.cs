@@ -27,28 +27,28 @@ public class Program
         connection.Open();
 
         ToDosRepository toDosRepository = new(connection);
-        // ToDo toDo = new()
-        // {
-        //     Title = "Task 006",
-        //     Description = "Some description about the task",
-        //     Done = false,
-        //     Status = ToDoStatus.Completed,
-        //     CreatedAt = DateTime.UtcNow
-        // };
-
-        // toDo = toDosRepository.CreateAsync(toDo).GetAwaiter().GetResult();
-        // Console.WriteLine("ToDo created with Id: {0}", toDo.Id);
-        List<ToDo> toDos = toDosRepository.RetrieveDataWithDataAdapterAndQueryingWithLinq();
-        foreach (ToDo toDo in toDos)
+        ToDo toDo = new()
         {
-            Console.WriteLine("Id: " + toDo.Id);
-            Console.WriteLine("Title: " + toDo.Title);
-            Console.WriteLine("Status: " + toDo.Status);
-        }
+            Title = "Task 004",
+            Description = "Some description about the task",
+            Done = true,
+            Status = ToDoStatus.Completed,
+            CreatedAt = DateTime.UtcNow,
+        };
 
-        Console.WriteLine("============================================");
-        connection.Close();
+        toDo = toDosRepository.CreateAsync(toDo).GetAwaiter().GetResult();
+        Console.WriteLine("ToDo created with Id: {0}", toDo.Id);
+        //List<ToDo> toDos = toDosRepository.RetrieveDataWithDataAdapterAndQueryingWithLinq();
+        //foreach (ToDo toDo in toDos)
+        //{
+        //    Console.WriteLine("Id: " + toDo.Id);
+        //    Console.WriteLine("Title: " + toDo.Title);
+        //    Console.WriteLine("Status: " + toDo.Status);
+        //}
+
+        //Console.WriteLine("============================================");
         // UsersSQLQuerySelectCommand(connectionString);
+        connection.Close();
     }
 
     private static void UsersSQLQuerySelectCommand(string connectionString)

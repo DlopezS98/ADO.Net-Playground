@@ -5,11 +5,6 @@ using core_data_provider.Entities;
 using System.Reflection;
 using System.Data;
 
-class CommandSettings
-{
-    public List<string> Parameters { get; set; } = new();
-    public List<string> Columns { get; set; } = new();
-}
 
 class ColumnSetting
 {
@@ -39,13 +34,13 @@ public class SqlOperationsBuilder<T> where T : BaseEntity
     {
         string entityName = GetEntityName(entity);
         List<ColumnSetting> settings = GetColumnSettings(entity);
-        string sqlQuery = GetInsetQuery(entityName, settings);
+        string sqlQuery = GetInsertQuery(entityName, settings);
         SqlCommand sqlCommand = new SqlCommand(sqlQuery);
         sqlCommand.Parameters.AddRange(GetSqlParameters(settings));
         return sqlCommand;
     }
 
-    private string GetInsetQuery(string entityName, List<ColumnSetting> settings)
+    private string GetInsertQuery(string entityName, List<ColumnSetting> settings)
     {
 
         StringBuilder builder = new StringBuilder();

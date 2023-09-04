@@ -55,7 +55,7 @@ public class SqlOperationsBuilder<T> where T : BaseEntity
             .Append($"[{entityName}] (")
             .AppendJoin(',', columns)
             .Append(") ")
-            .AppendLine("VALUES (")
+            .Append("VALUES (")
             .AppendJoin(',', parameters)
             .Append(");");
 
@@ -86,13 +86,21 @@ public class SqlOperationsBuilder<T> where T : BaseEntity
                 Attribute = type.GetCustomAttribute<SqlPropertyAttribute>()!
             })
             .ToList();
-        return attributes.Select(attr => new ColumnSetting
+
+        return attributes.Select(attr =>
         {
-            Name = attr.Attribute.Name,
-            SqlDbType = attr.Attribute.SqlDbType,
-            Value = !attr.Attribute.IsEnum 
-                ? entityType.GetProperty(attr.ProperyName)?.GetValue(entity) 
-                : Enum.GetName(attr.Attribute.EnumType, entityType.GetProperty(attr.ProperyName)?.GetValue(entity))
+            object? value = entityType.GetProperty(attr.ProperyName)?.GetValue(entity) ?? null;
+            if (attr.Attribute.IsEnum && value is not null)
+            {
+                value = Enum.GetName(attr.Attribute.EnumType!, value);
+            }
+
+            return new ColumnSetting
+            {
+                Name = attr.Attribute.Name,
+                SqlDbType = attr.Attribute.SqlDbType,
+                Value = value
+            };
         }).ToList();
     }
 
@@ -101,11 +109,13 @@ public class SqlOperationsBuilder<T> where T : BaseEntity
         List<SqlParameter> parameters = new();
         foreach (ColumnSetting setting in settings)
         {
+            bool isNullable = setting.Value is null;
             SqlParameter parameter = new()
             {
                 ParameterName = setting.ParameterName,
-                Value = setting.Value,
-                SqlDbType = setting.SqlDbType
+                Value = setting.Value ?? DBNull.Value,
+                SqlDbType = setting.SqlDbType,
+                IsNullable = isNullable
             };
 
             parameters.Add(parameter);

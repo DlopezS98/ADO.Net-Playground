@@ -1,8 +1,10 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using core_data_provider.Builders;
+using core_data_provider.Entities;
 
-namespace core_data_provider;
+namespace core_data_provider.Repositories;
 
 public class ToDosRepository
 {

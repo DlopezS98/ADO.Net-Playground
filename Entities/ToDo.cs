@@ -1,8 +1,7 @@
 ﻿using System.Data;
 using core_data_provider.Attributes;
-using core_data_provider.Entities;
 
-namespace core_data_provider;
+namespace core_data_provider.Entities;
 
 public enum ToDoStatus
 {

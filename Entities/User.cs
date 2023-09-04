@@ -1,4 +1,4 @@
-﻿namespace core_data_provider;
+﻿namespace core_data_provider.Entities;
 
 public class User
 {

@@ -32,7 +32,7 @@ public class SqlPropertyAttribute : Attribute
     //    IsEnum = false;
     //    EnumType = null;
     //}
-    
+
     public SqlPropertyAttribute(string columnName, SqlDbType sqlDbType, bool isEnum = false, Type? enumType = null)
     {
         // Type = type;

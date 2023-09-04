@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
-using System.Runtime.InteropServices;
+using core_data_provider.Entities;
+using core_data_provider.Repositories;
 using Microsoft.Extensions.Configuration;
 
 namespace core_data_provider;

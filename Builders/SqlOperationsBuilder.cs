@@ -1,10 +1,11 @@
 using System.Data.SqlClient;
 using System.Text;
-using core_data_provider.Attributes;
 using core_data_provider.Entities;
 using System.Reflection;
 using System.Data;
+using core_data_provider.Attributes;
 
+namespace core_data_provider.Builders;
 
 class ColumnSetting
 {

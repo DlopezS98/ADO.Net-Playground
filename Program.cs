@@ -1,7 +1,5 @@
-﻿using System.Data;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
 using core_data_provider.Entities;
-using core_data_provider.Repositories;
 using core_data_provider.Services;
 using Microsoft.Extensions.Configuration;
 
@@ -132,7 +130,9 @@ public class Program
 
                 case 4:
                     {
-                        Console.WriteLine("Not Implemented...");
+                        Console.WriteLine("Deleting a ToDo...");
+                        service.DeleteById().Wait();
+                        Console.WriteLine("ToDo deleted...");
                         WaitConsoleExecution();
                         break;
                     }

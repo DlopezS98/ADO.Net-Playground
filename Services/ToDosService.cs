@@ -41,13 +41,28 @@ public class ToDosService
         return toDo;
     }
 
-    public async Task<List<ToDo>> GetAll()
+    public Task<List<ToDo>> GetAll()
     {
-        return await _toDosRepository.GetAll();
+        return _toDosRepository.GetAll();
     }
 
     public Task<ToDo?> GetById(Guid id)
     {
-        throw new NotImplementedException();
+        return _toDosRepository.GetByIdAsync(id);
+    }
+
+    public async Task DeleteById()
+    {
+        Console.WriteLine("Enter de Id: ");
+        Guid id  = Guid.Parse(Console.ReadLine() ?? string.Empty);
+
+        ToDo? toDo = await _toDosRepository.GetByIdAsync(id);
+        if (toDo == null)
+        {
+            Console.WriteLine("\n ToDo with Id: {0} Not found", id);
+            return;
+        }
+
+        await _toDosRepository.DeleteAsync(id);
     }
 }

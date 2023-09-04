@@ -43,6 +43,48 @@ public class ToDosRepository
     //     adapter.Update()
     // }
 
+    public async Task DeleteAsync(Guid id)
+    {
+        string sqlQuery = "DELETE FROM ToDos WHERE Id = @Id";
+        SqlCommand command = new(sqlQuery, _connection);
+        command.CommandType = CommandType.Text;
+        command.Parameters.Add(new SqlParameter()
+        {
+            Direction = ParameterDirection.Input,
+            ParameterName = "@Id",
+            SqlDbType = SqlDbType.UniqueIdentifier,
+            Value = id
+        });
+
+        int rowsAffected = await command.ExecuteNonQueryAsync();
+        command.Dispose();
+        Console.WriteLine($"{rowsAffected} rows affected.");
+    }
+
+    public async Task<ToDo?> GetByIdAsync(Guid id)
+    {
+        DataTable dataTable = new DataTable();
+        string sqlQuery = "SELECT * FROM ToDos WHERE Id = @Id";
+        SqlCommand command = new(sqlQuery, _connection);
+        command.CommandType = CommandType.Text;
+        command.Parameters.Add(new SqlParameter()
+        {
+            Direction = ParameterDirection.Input,
+            ParameterName = "@Id",
+            SqlDbType = SqlDbType.UniqueIdentifier,
+            Value = id
+        });
+
+        SqlDataReader dataReader = await command.ExecuteReaderAsync();
+        dataTable.Load(dataReader);
+        command.Dispose();
+
+        return dataTable
+            .AsEnumerable()
+            .Select(MapEntityFromDataRow)
+            .FirstOrDefault();
+    }
+
     public async Task<List<ToDo>> GetAll()
     {
         DataTable dataTable = new DataTable();

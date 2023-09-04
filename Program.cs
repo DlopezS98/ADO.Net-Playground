@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using core_data_provider.Entities;
 using core_data_provider.Repositories;
+using core_data_provider.Services;
 using Microsoft.Extensions.Configuration;
 
 namespace core_data_provider;
@@ -26,94 +27,133 @@ public class Program
         IConfigurationRoot config = InitConfiguration();
         SqlConnection connection = GetSqlConnection(config);
         connection.Open();
-
-        ToDosRepository toDosRepository = new(connection);
-        ToDo toDo = new()
-        {
-            Title = "Task 004",
-            Description = "Some description about the task",
-            Done = true,
-            Status = ToDoStatus.Completed,
-            CreatedAt = DateTime.UtcNow,
-        };
-
-        toDo = toDosRepository.CreateAsync(toDo).GetAwaiter().GetResult();
-        Console.WriteLine("ToDo created with Id: {0}", toDo.Id);
-        //List<ToDo> toDos = toDosRepository.RetrieveDataWithDataAdapterAndQueryingWithLinq();
-        //foreach (ToDo toDo in toDos)
-        //{
-        //    Console.WriteLine("Id: " + toDo.Id);
-        //    Console.WriteLine("Title: " + toDo.Title);
-        //    Console.WriteLine("Status: " + toDo.Status);
-        //}
-
-        //Console.WriteLine("============================================");
-        // UsersSQLQuerySelectCommand(connectionString);
+        ShowAvailableEntities(connection);
         connection.Close();
     }
 
-    private static void UsersSQLQuerySelectCommand(string connectionString)
+    public static void ShowAvailableEntities(SqlConnection connection)
     {
-        DataTable dataTable = new DataTable();
-        SqlConnection connection = new SqlConnection(connectionString);
-        const string sqlQuery = "SELECT * FROM Security.Users;";
-        SqlCommand command = new(sqlQuery, connection)
-        {
-            CommandText = sqlQuery,
-            CommandTimeout = 1000,
-            CommandType = CommandType.Text
-        };
+        int option;
 
-        try
+        do
         {
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            dataTable.Load(reader);
-            command.Dispose();
-            connection.Close();
+            Console.Clear();
+            Console.WriteLine("1. ToDos");
+            Console.WriteLine("2. Users");
+            Console.WriteLine("3. Salir");
+            Console.WriteLine("Select an option: ");
+            option = Convert.ToInt32(Console.ReadLine());
 
-            List<User> users = new List<User>();
-            foreach (DataRow item in dataTable.Rows)
+            switch (option)
             {
-                User user = new()
-                {
-                    Id = GetValueOrDefault<Guid>(item, "Id"),
-                    UserName = GetValueOrDefault<string>(item, "UserName"),
-                    NormalizedUserName = GetValueOrDefault<string>(item, "NormalizedUserName"),
-                    Email = GetValueOrDefault<string>(item, "Email"),
-                    NormalizedEmail = GetValueOrDefault<string>(item, "NormalizedEmail"),
-                    EmailConfirmed = GetValueOrDefault<bool>(item, "EmailConfirmed"),
-                    PasswordHash = GetValueOrDefault<string>(item, "PasswordHash"),
-                    SecurityStamp = GetValueOrDefault<string>(item, "SecurityStamp"),
-                    ConcurrencyStamp = GetValueOrDefault<string>(item, "ConcurrencyStamp"),
-                    PhoneNumber = GetValueOrDefault<string>(item, "PhoneNumber"),
-                    PhoneNumberConfirmed = GetValueOrDefault<bool>(item, "PhoneNumberConfirmed"),
-                    TwoFactorEnabled = GetValueOrDefault<bool>(item, "TwoFactorEnabled"),
-                    LockoutEnd = GetValueOrDefault<DateTime>(item, "LockoutEnd"),
-                    LockoutEnabled = GetValueOrDefault<bool>(item, "LockoutEnabled"),
-                    AccessFailedCount = GetValueOrDefault<int>(item, "AccessFailedCount")
-                };
+                case 1:
+                    ShowToDosMenu(connection);
+                    break;
 
-                users.Add(user);
+                case 2:
+                    Console.WriteLine("Not Implemented...");
+                    WaitConsoleExecution();
+                    break;
+
+                case 3:
+                    Console.WriteLine("Shutting down the application...");
+                    WaitConsoleExecution();
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid Option...");
+                    WaitConsoleExecution();
+                    break;
             }
 
-            foreach (var user in users)
-            {
-                Console.WriteLine("============================================");
-                Console.WriteLine("Id: " + user.Id);
-                Console.WriteLine("UserName: " + user.UserName);
-                Console.WriteLine("Email: " + user.Email);
-                Console.WriteLine("Password: " + user.PasswordHash);
-            }
-        }
-        catch (Exception exc)
-        {
-            Console.WriteLine(exc.Message);
-        }
+        } while (option != 3);
     }
 
-    public static T GetValueOrDefault<T>(DataRow row, string index, T defaultValue = default!)
+    public static void ShowToDosMenu(SqlConnection connection)
     {
-        return !row.IsNull(index) ? (T)row[index] : defaultValue;
+        int option;
+        ToDosService service = new ToDosService(connection);
+
+        do
+        {
+            Console.Clear();
+            Console.WriteLine("================== Entity - ToDos ==================");
+            Console.WriteLine("================== Available Operations ==================");
+            Console.WriteLine("1. Create");
+            Console.WriteLine("2. Read");
+            Console.WriteLine("3. Update");
+            Console.WriteLine("4. Delete");
+            Console.WriteLine("5. Go Back");
+            Console.WriteLine("Select an option: ");
+            option = Convert.ToInt32(Console.ReadLine());
+
+            switch (option)
+            {
+                case 1:
+                    {
+                        ToDo toDo = service.CreateAsync().GetAwaiter().GetResult();
+                        Console.WriteLine("ToDo created");
+                        Console.WriteLine("Id: " + toDo.Id);
+                        Console.WriteLine("Title: " + toDo.Title);
+
+                        WaitConsoleExecution();
+                        break;
+                    }
+
+                case 2:
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Retrieving ToDos from the Database...");
+                        List<ToDo> toDos = service.GetAll().GetAwaiter().GetResult();
+                        Console.WriteLine("ToDos...");
+                        foreach (ToDo toDo in toDos)
+                        {
+                            Console.WriteLine("====================================================");
+                            Console.WriteLine("Id: " + toDo.Id);
+                            Console.WriteLine("Title: " + toDo.Title);
+                            Console.WriteLine("Description: " + toDo.Description ?? "Not Set");
+                            Console.WriteLine("Status: " + toDo.Status);
+                            Console.WriteLine("Created At: " + toDo.CreatedAt);
+                            Console.WriteLine();
+                        }
+
+                        Console.WriteLine("====================================================");
+                        Console.WriteLine();
+                        WaitConsoleExecution();
+                        break;
+                    }
+
+                case 3:
+                    {
+                        Console.WriteLine("Not Implemented...");
+                        WaitConsoleExecution();
+                        break;
+                    }
+
+                case 4:
+                    {
+                        Console.WriteLine("Not Implemented...");
+                        WaitConsoleExecution();
+                        break;
+                    }
+
+                case 5:
+                    Console.WriteLine("\nGoing Back to previous menu...");
+                    WaitConsoleExecution();
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid Option...");
+                    WaitConsoleExecution();
+                    break;
+            }
+
+        } while (option != 5);
+    }
+
+    private static void WaitConsoleExecution()
+    {
+        Console.WriteLine("Press Any Key...");
+        Console.ReadLine();
     }
 }

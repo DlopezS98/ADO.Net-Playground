@@ -43,6 +43,21 @@ public class ToDosRepository
     //     adapter.Update()
     // }
 
+    public async Task<List<ToDo>> GetAll()
+    {
+        DataTable dataTable = new DataTable();
+        const string sqlQuery = "SELECT * FROM ToDos;";
+        SqlCommand command = new SqlCommand(sqlQuery, _connection);
+        SqlDataReader reader = await command.ExecuteReaderAsync();
+        dataTable.Load(reader);
+        command.Dispose();
+
+        return dataTable
+            .AsEnumerable()
+            .Select(MapEntityFromDataRow)
+            .ToList();
+    }
+
     public Task<List<ToDo>> RetrieveDataWithDataAdaptersAsync()
     {
         DataSet dataSet = new DataSet();
@@ -54,17 +69,7 @@ public class ToDosRepository
         List<ToDo> toDos = new();
         foreach (DataRow row in dataSet.Tables[0].Rows)
         {
-            ToDo toDo = new()
-            {
-                Id = GetValueOrDefault<Guid>(row, "Id"),
-                Title = GetValueOrDefault<string>(row, "Title"),
-                Description = GetValueOrDefault<string?>(row, "Description"),
-                Done = GetValueOrDefault<bool>(row, "Done"),
-                Status = Enum.Parse<ToDoStatus>(GetValueOrDefault<string>(row, "Status")),
-                CreatedAt = GetValueOrDefault<DateTime>(row, "CreatedAt"),
-                StartedAt = GetValueOrDefault<DateTime?>(row, "StartedAt"),
-                UpdatedAt = GetValueOrDefault<DateTime?>(row, "CompletedAt"),
-            };
+            ToDo toDo = MapEntityFromDataRow(row);
             toDos.Add(toDo);
         }
 
@@ -124,6 +129,23 @@ public class ToDosRepository
     private static T GetValueOrDefault<T>(DataRow row, string index, T defaultValue = default!)
     {
         return !row.IsNull(index) ? (T)row[index] : defaultValue;
+    }
+
+    private ToDo MapEntityFromDataRow(DataRow row)
+    {
+        ToDo toDo = new()
+        {
+            Id = GetValueOrDefault<Guid>(row, "Id"),
+            Title = GetValueOrDefault<string>(row, "Title"),
+            Description = GetValueOrDefault<string?>(row, "Description"),
+            Done = GetValueOrDefault<bool>(row, "Done"),
+            Status = Enum.Parse<ToDoStatus>(GetValueOrDefault<string>(row, "Status")),
+            CreatedAt = GetValueOrDefault<DateTime>(row, "CreatedAt"),
+            StartedAt = GetValueOrDefault<DateTime?>(row, "StartedAt"),
+            UpdatedAt = GetValueOrDefault<DateTime?>(row, "UpdatedAt"),
+        };
+
+        return toDo;
     }
 
     private SqlParameter[] GetParameters(ToDo toDo)

@@ -1,5 +1,6 @@
 ﻿using System.Data.SqlClient;
 using core_data_provider.Entities;
+using core_data_provider.Repositories;
 using core_data_provider.Services;
 using Microsoft.Extensions.Configuration;
 
@@ -14,22 +15,22 @@ public class Program
             .AddEnvironmentVariables()
             .Build();
     }
-    static SqlConnection GetSqlConnection(IConfigurationRoot config)
+    static SingletonSqlConnection GetSqlConnection(IConfigurationRoot config)
     {
         string connectionString = config.GetConnectionString("MSSQLServer") ?? string.Empty;
-        return new SqlConnection(connectionString);
+        return SingletonSqlConnection.GetInstance(connectionString);
     }
 
     private static void Main(string[] args)
     {
         IConfigurationRoot config = InitConfiguration();
-        SqlConnection connection = GetSqlConnection(config);
-        connection.Open();
-        ShowAvailableEntities(connection);
-        connection.Close();
+        SingletonSqlConnection connectionBuilder = GetSqlConnection(config);
+        connectionBuilder.OpenConnection();
+        ShowAvailableEntities(connectionBuilder);
+        connectionBuilder.CloseConnection();
     }
 
-    public static void ShowAvailableEntities(SqlConnection connection)
+    public static void ShowAvailableEntities(SingletonSqlConnection connectionBuilder)
     {
         int option;
 
@@ -45,7 +46,7 @@ public class Program
             switch (option)
             {
                 case 1:
-                    ShowToDosMenu(connection);
+                    ShowToDosMenu(connectionBuilder);
                     break;
 
                 case 2:
@@ -67,10 +68,12 @@ public class Program
         } while (option != 3);
     }
 
-    public static void ShowToDosMenu(SqlConnection connection)
+    public static void ShowToDosMenu(SingletonSqlConnection connectionBuilder)
     {
         int option;
-        ToDosService service = new ToDosService(connection);
+        
+        ToDosRepository repository = new(connectionBuilder);
+        ToDosService service = new(repository);
 
         do
         {

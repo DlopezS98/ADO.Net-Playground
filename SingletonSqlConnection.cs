@@ -9,19 +9,31 @@ public class SingletonSqlConnection
 
     private readonly SqlConnection connection;
 
-    private SingletonSqlConnection()
+    private SingletonSqlConnection(string connectionString)
     {
-        connection = new SqlConnection();
+        connection = new SqlConnection(connectionString);
         connection.Open();
     }
 
-    public static SingletonSqlConnection Instance
+    public static SingletonSqlConnection GetInstance(string connectionString)
     {
-        get
-        {
-            _instance ??= new SingletonSqlConnection();
-            return _instance;
-        }
+        _instance ??= new SingletonSqlConnection(connectionString);
+        return _instance;
+    }
+
+    public void SetSqlConnection(SqlCommand command)
+    {
+        command.Connection = connection;
+    }
+
+    public SqlCommand CreateCommand(string query)
+    {
+        return new SqlCommand(query, connection);
+    }
+
+    public SqlDataAdapter CreateDataApdapter(string query)
+    {
+        return new SqlDataAdapter(query, connection);
     }
 
     public DataTable ExecuteQueryCommand(string sql)
@@ -35,7 +47,7 @@ public class SingletonSqlConnection
         command.Dispose();
         return dt;
     }
-    
+
     public async Task<DataTable> ExecuteQueryCommandAsync(string sql)
     {
         DataTable dt = new DataTable();

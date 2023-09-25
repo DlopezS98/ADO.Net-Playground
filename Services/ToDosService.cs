@@ -7,9 +7,9 @@ namespace core_data_provider.Services;
 public class ToDosService
 {
     private readonly ToDosRepository _toDosRepository;
-    public ToDosService(SqlConnection connection)
+    public ToDosService(ToDosRepository repository)
     {
-        _toDosRepository = new ToDosRepository(connection);
+        _toDosRepository = repository;
     }
 
     public async Task<ToDo> CreateAsync()

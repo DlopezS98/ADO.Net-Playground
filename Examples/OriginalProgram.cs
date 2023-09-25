@@ -26,7 +26,7 @@ class OriginalProgram
         SqlConnection connection = GetSqlConnection(config);
         connection.Open();
 
-        ToDosRepository toDosRepository = new(connection);
+        //ToDosRepository toDosRepository = new(connection);
         ToDo toDo = new()
         {
             Title = "Task 004",
@@ -36,7 +36,7 @@ class OriginalProgram
             CreatedAt = DateTime.UtcNow,
         };
 
-        toDo = toDosRepository.CreateAsync(toDo).GetAwaiter().GetResult();
+        //toDo = toDosRepository.CreateAsync(toDo).GetAwaiter().GetResult();
         Console.WriteLine("ToDo created with Id: {0}", toDo.Id);
         //List<ToDo> toDos = toDosRepository.RetrieveDataWithDataAdapterAndQueryingWithLinq();
         //foreach (ToDo toDo in toDos)

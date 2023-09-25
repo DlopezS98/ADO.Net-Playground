@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Linq;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Text;
@@ -9,10 +10,10 @@ namespace core_data_provider.Repositories;
 
 public class ToDosRepository
 {
-    private readonly SqlConnection _connection;
-    public ToDosRepository(SqlConnection sqlConnection)
+    private readonly SingletonSqlConnection _connectionBuilder;
+    public ToDosRepository(SingletonSqlConnection connection)
     {
-        _connection = sqlConnection;
+        _connectionBuilder = connection;
     }
 
     public async Task<ToDo> CreateAsync(ToDo toDo)
@@ -21,7 +22,7 @@ public class ToDosRepository
         toDo.Id = Guid.NewGuid();
         SqlCommand cmd = new SqlOperationsBuilder().From(toDo).GetInsertCommand();
         cmd.CommandType = CommandType.Text;
-        cmd.Connection = _connection;
+        _connectionBuilder.SetSqlConnection(cmd);
         //const string sqlQuery = "INSERT INTO ToDos (Id, Title, Description, Done, Status, CreatedAt)" +
         //    "VALUES (@Id, @Title, @Description, @Done, @Status, @CreatedAt)";
         //// https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/executing-a-command
@@ -47,7 +48,7 @@ public class ToDosRepository
     public async Task DeleteAsync(Guid id)
     {
         string sqlQuery = "DELETE FROM ToDos WHERE Id = @Id";
-        SqlCommand command = new(sqlQuery, _connection);
+        SqlCommand command = _connectionBuilder.CreateCommand(sqlQuery);
         command.CommandType = CommandType.Text;
         command.Parameters.Add(new SqlParameter()
         {
@@ -66,7 +67,7 @@ public class ToDosRepository
     {
         DataTable dataTable = new DataTable();
         string sqlQuery = "SELECT * FROM ToDos WHERE Id = @Id";
-        SqlCommand command = new(sqlQuery, _connection);
+        SqlCommand command = _connectionBuilder.CreateCommand(sqlQuery);
         command.CommandType = CommandType.Text;
         command.Parameters.Add(new SqlParameter()
         {
@@ -90,7 +91,7 @@ public class ToDosRepository
     {
         DataTable dataTable = new DataTable();
         const string sqlQuery = "SELECT * FROM ToDos;";
-        SqlCommand command = new SqlCommand(sqlQuery, _connection);
+        SqlCommand command = _connectionBuilder.CreateCommand(sqlQuery);
         SqlDataReader reader = await command.ExecuteReaderAsync();
         dataTable.Load(reader);
         command.Dispose();
@@ -106,7 +107,7 @@ public class ToDosRepository
         DataSet dataSet = new DataSet();
         SqlDataAdapter adapter = new SqlDataAdapter();
         const string sqlQuery = "SELECT * FROM ToDos";
-        SqlCommand cmd = new SqlCommand(sqlQuery, _connection);
+        SqlCommand cmd = _connectionBuilder.CreateCommand(sqlQuery);
         adapter.SelectCommand = cmd;
         adapter.Fill(dataSet);
         List<ToDo> toDos = new();
@@ -124,7 +125,7 @@ public class ToDosRepository
         // https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/loading-data-into-a-dataset
         DataSet dataSet = new DataSet();
         const string sqlQuery = "SELECT * FROM ToDos;";
-        SqlDataAdapter adapter = new SqlDataAdapter(sqlQuery, _connection);
+        SqlDataAdapter adapter = _connectionBuilder.CreateDataApdapter(sqlQuery);
         DataTableMapping mapping = adapter.TableMappings.Add("ToDosMapping", "ToDos");
         // Change column names from the datasource
         mapping.ColumnMappings.Add("Name", "Title");
